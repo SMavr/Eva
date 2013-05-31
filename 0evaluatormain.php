@@ -1,7 +1,12 @@
 <?php
-
 include_once ('evform.php');
-$idea= mysql_real_escape_string($_POST['idea']);
+session_start();
+ 
+ if(isset($_POST['dropdown1'])){
+        $_SESSION['idea'] = $_POST['dropdown1'];
+    }
+    else 
+        {echo "what the fuck?"; }
 ?>
 <!DOCTYPE html>
 <html>
@@ -26,13 +31,14 @@ $idea= mysql_real_escape_string($_POST['idea']);
   <li><a href="5possibility.php" target="mainframe">Υλοποίηση Δυνατότητας</a></li>  
   <li><a href="6scifyuse.php" target="mainframe">Χρησιμότητα για τη SciFY</a></li>
   <li><a href="7subjective.php" target="mainframe">Υποκειμενικά κριτήρια</a></li>
+  <li><?php echo "Welcome, ".$_SESSION['user']."<br>";?></li>
 </ul>  
           </div><!--/.nav-collapse -->
         </div>
            
       </div>
              <div class="well" style="float: left; text-align: center; width: 100%; margin-top: 2%">
-                 <h3>Αξιολόγηση Ιδέας</h3></div>
+                 <h3><?php echo $_SESSION['idea']." Evaluation"; ?></h3></div>
       
         <div class="well" style="width: inherit;" >        
         <iframe src="1instructions.php" name="mainframe"  height="550" width="1300"></frame></div></div>

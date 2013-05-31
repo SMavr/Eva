@@ -88,7 +88,39 @@ confirm("Would you like to delete all of his answers too?");
                   </div>
                   <div id="collapseOne" class="accordion-body collapse in">
                     <div class="accordion-inner">
-                      Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                      <h3 id="myModalLabel">Edit Question</h3>
+                 Question Text<input type="text"><br>
+                 Question Weight<input type="text"><br>
+                  Set Category  
+                 
+  <select>
+  <option >Category 1</option>
+  <option >Category 2</option>
+  <option >Category 3</option>
+  </select><br>
+  
+  
+  
+  
+     
+  <h4>Edit Answers</h4><br>
+  <p>Text         Value        Delete</p>
+  <div>
+  <?php
+  $query1= "SELECT * FROM qvalues WHERE question_id=1";
+  $fetch1=mysqli_query($con,$query1);
+  while($result1 = mysqli_fetch_array($fetch1)) {
+      echo " <input type='text' value='".$result1["qv_text"]."'> <input type='text'
+    value='" .$result1["qv_value"]."'>
+    <button class='btn'>Delete</button>";}
+  ?>
+      <br>
+     <button class='btn'>add</button> 
+     <br>
+         <button class='btn btn-primary'>OK</button>
+         <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
+          </div>
+  </div>      
                     </div>
                   </div>
                 </div>

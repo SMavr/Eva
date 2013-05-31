@@ -1,7 +1,7 @@
 <?php
 
 include_once ('evform.php');
-$idea= mysql_real_escape_string($_POST['idea']);
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -21,7 +21,7 @@ $idea= mysql_real_escape_string($_POST['idea']);
   </li>  
   <li><a href="01users.php" target="mainframe">Χρήστες</a></li>  
   <li><a href="02ideas.php" target="mainframe">Ιδέες</a></li>  
-  <li><a href="3usability.php" target="mainframe">Ερωτήσεις/Οδηγίες</a></li>  
+  <li><a href="03questions.php" target="mainframe">Ερωτήσεις/Οδηγίες</a></li>  
   <li><a href="04ranking.php" target="mainframe">Ranking</a></li>  
 </ul>  
           </div><!--/.nav-collapse -->

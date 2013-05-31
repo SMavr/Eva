@@ -13,15 +13,17 @@ $log_check=mysqli_num_rows($result);
 if($log_check==1){
  if($row["role"]=="Evaluator")   
  {
+     session_start();
  $_SESSION['user']= $_POST["username"];
 header("location:00ideaselection.php");
  }
  else if ($row["role"]=="Admin"){
+     session_start();
      $_SESSION['user']= $_POST["username"];
 header("location:0mainadmin.php");
  }
  else {
-     echo 'your are not an Evaluator!';
+     echo 'Password or Name are not correct!';
  }
     
     
