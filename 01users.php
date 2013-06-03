@@ -1,7 +1,49 @@
 <!DOCTYPE html>
 <?php 
 include_once ('evform.php');
-
+// caution! All insert commands have to remain first towards select commands
+// inserting new user into the database
+   if(isset($_POST['newusername'])){
+       if(isset($_POST['newMail'])){
+           echo $_POST['newMail'];   
+        $_POST['newMail']=null;   
+       }
+       else{
+  $insertuser="INSERT INTO user (username, password)
+VALUES ('$_POST[newusername]','$_POST[newpasswordname]')";
+  mysqli_query($con,$insertuser);
+       
+  //inserting attribute inside the database
+  if(isset($_POST['isattr'])){
+  foreach ($_POST['isattr'] as $newuserattr)
+            {
+      
+      //maybe we should imporve this SQL commands
+      $sql1="SELECT user_id FROM user WHERE username='".$_POST['newusername']."'";
+      $sql2="SELECT attr_id FROM attribute WHERE attr_title='".$newuserattr."'";
+      $sql1fetch=mysqli_query($con,$sql1);
+      $sql2fetch=mysqli_query($con,$sql2);
+      $sql1result=mysqli_fetch_array($sql1fetch);
+      $sql2result=mysqli_fetch_array($sql2fetch);
+  $insertuser = "INSERT INTO usertoattr (user_id, attr_id) VALUES 
+(".$sql1result['user_id'].",".$sql2result['attr_id'].")";
+   mysqli_query($con,$insertuser);
+            }
+  }
+            //important deleting the post of the new user
+  
+   }
+    $_POST['newusername']=null; 
+   $_POST['password']=null;
+    $_POST['isattr']=null;
+   }
+   
+   //deleting user
+    if(isset($_POST['deleteuserid'])){
+        echo $_POST['deleteuserid'];
+     $deleteuser=" DELETE FROM user WHERE user_id='$_POST[deleteuserid]'"; 
+      mysqli_query($con,$deleteuser);
+    }
 // retrieving all users from user table 
 $query= "SELECT * FROM user";
     $fetch=mysqli_query($con,$query) or die ('could no connect with instructions');
@@ -9,6 +51,7 @@ $query= "SELECT * FROM user";
  // retrieving  attributes
    $attrquery= "SELECT * FROM attribute";
     $attrfetch=mysqli_query($con,$attrquery) or die ('could no connect with instructions'); 
+    
     
 ?>
 <html>
@@ -23,7 +66,7 @@ $query= "SELECT * FROM user";
     </head>
     <body>
         <table class="table table-hover" id="usertable">
-            <tr><th>Username</th><th>Password</th><th>Role</th>><th>Attribute</th></th><th>Ideas/Score Ratio</th><th>Edit</th><th>Delete</th></tr>
+            <tr><th>Username</th><th>Password</th><th>Role</th><th>Attribute</th></th><th>Ideas/Score Ratio</th><th>Edit</th><th>Delete</th></tr>
         <?php
    
  while($result = mysqli_fetch_array($fetch)) {
@@ -45,11 +88,14 @@ $query= "SELECT * FROM user";
      }
 
      // writing the table staff
-echo "<tr id='kota'><td id='kati'>".$result["username"]."</td><td>" .$result["password"]."</td>
+echo "<tr ><td>".$result["username"]."</td><td>" .$result["password"]."</td>
     <td>" .$result["role"]."</td><td>".$attribute."</td><td>coming soon</td><td>
-         <a href='#editUser' role='button'  class='btn' data-toggle='modal' onclick=\"javascript:rewriteUser('".$result["username"]."','".
-        $result["password"]."','".$result["role"]."');\">Edit</a> </td>
-         <td><button class='btn'onclick='deleteConfirm()'>Delete</button> </td></tr>";
+         <a href='#userModal' role='button'  class='btn' data-toggle='modal' onclick=\"javascript:rewriteUser('".$result["username"]."','".
+        $result["password"]."','".$result["role"]."','".$result["user_id"]."');\">Edit</a> </td>
+         <td><a href='#' role='button' class='btn' onclick=\"javascript:deleteConfirm('".$result['user_id'].
+        "');\">Delete</button> </td></tr>";
+
+
 }
     
  
@@ -61,28 +107,31 @@ echo "<tr id='kota'><td id='kati'>".$result["username"]."</td><td>" .$result["pa
             <div id="userModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div> 
                  <h3 id="myModalLabel">Add New User</h3>
-                 User Name <input type="text"><br>
-         User Password <input type="text"><br>
-         User Email <input type="text"><br>
-         User Role <select>
+                 <form method='post' action='01users.php'>
+                 User Name <input type="text" name="newusername" id='editName'><br>
+         User Password <input type="text" name="newpasswordname" id='editPass'><br>
+         User Email <input type="text" id='editEmail' name="newMail"><br>
+         User Role <select multiple="multiple">
   <option >Evaluator</option>
   <option >Observer</option>
          </select><br>
-         User Attribute <select multiple>
+         User Attribute <select multiple="multiple" name="isattr[]" id="editAttr">
              <?php
+             
  while($attrresult = mysqli_fetch_array($attrfetch)) {
-echo  "<option >".$attrresult[attr_title]."</option>";
+echo  "<option>".$attrresult[attr_title]."</option>";
  }
              ?>
          </select><br>
-         <button class='btn btn-primary'>OK</button>
+         <button class='btn btn-primary'type='submit'>OK</button>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
+                 </form>
                 
             </div>
-            <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal">Add New User</a>
-  
-            
-        
+             <!--Creating the add button. rewriteUser is important for the edituser data not to be writed in the modal -->
+            <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:rewriteUser('','','',null);">Add New User</a>
+ 
+         <!-- Modal for the creation of a Edit User (Depricated)
      <div id="editUser" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div> 
                  <h3 id="myModalLabel">Edit User</h3>
@@ -101,55 +150,51 @@ echo  "<option >".$attrresult[attr_title]."</option>";
          <button class='btn btn-primary'>OK</button>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
                 
-            </div>   
+            </div>   -->
                
 <script>
-function deleteConfirm()
+function deleteConfirm(userid)
 {
 var r=confirm("Are you sure you want to delete this user?");
-
 if (r==true){
-    deleteAnswers();
+    deleteAnswers(userid);
 }
 }
 
-function deleteAnswers()
+function deleteAnswers(userid)
 {
+    //document.getElementById("exp").innerHTML=userid;
+
+//run again the php file
+// this time the delete post values are valid!
+$.post("01users.php",{ deleteuserid : userid });
+window.location.href = "01users.php";
 confirm("Would you like to delete all of his answers too?");
 }
 
-function rewriteUser(name,password,role) {
+//insert values from table to modal
+function rewriteUser(name,password,role,userid) {
  var myTarget = document.getElementById("editName");
     myTarget.value =name;
     myTarget = document.getElementById("editPass");
     myTarget.value =password;
-    myTarget = document.getElementById("editRole");
-    myTarget.value =role;
-    myTarget = document.getElementById("editAttr");
- // for (i=0;i<this.length;i++){
-    //myTarget.value =attr[i];
+    myTarget = document.getElementById("editEmail");
+    myTarget.value =userid;
+//     myTarget = document.getElementById("editRole");
+//    myTarget.value =role;
+//    myTarget = document.getElementById("editAttr");
     
+    //declaring that that there is user_id
+$.post("01users.php",{ edit_user_id : userid });
+
  // }
 }
-//document.getElementById("1").innerHTML="Welcome to my Homepage";
-
-//function addtext() {
-//    
-//	var newtext = document.myform.kati.value;
-//	if (document.myform.placement[1].checked) {
-//		document.myform.outputtext.value = "";
-//		}
-//	document.myform.outputtext.value += newtext;
-//}
-//function myFunction()
-//{
-//$("#editName").html("Heiko")
-//}
-//$(document).ready(myFunction);
 
  
 </script>
- 
+ <?php
+ //mysqli_close($con);
+ ?>
     </body>
     
 </html>
