@@ -3,10 +3,16 @@
 include_once ('evform.php');
 // caution! All insert commands have to remain first towards select commands
 // inserting new user into the database
+
    if(isset($_POST['newusername'])){
-       if(isset($_POST['newMail'])){
-           echo $_POST['newMail'];   
-        $_POST['newMail']=null;   
+      
+       
+       //if you select the id from the hidden div update the current user
+       if($_POST['hiddenid']!=null){
+       $sql1="UPDATE user SET username='$_POST[newusername]',password='$_POST[newpasswordname]' 
+           WHERE user_id='$_POST[hiddenid]'";   
+         mysqli_query($con,$sql1);
+        $_POST['hiddenid']=null;   
        }
        else{
   $insertuser="INSERT INTO user (username, password)
@@ -40,7 +46,6 @@ VALUES ('$_POST[newusername]','$_POST[newpasswordname]')";
    
    //deleting user
     if(isset($_POST['deleteuserid'])){
-        echo $_POST['deleteuserid'];
      $deleteuser=" DELETE FROM user WHERE user_id='$_POST[deleteuserid]'"; 
       mysqli_query($con,$deleteuser);
     }
@@ -75,31 +80,28 @@ $query= "SELECT * FROM user";
      $usertoattrquery= "SELECT attr_title FROM attribute, usertoattr, user WHERE 
          user.user_id = ".$result['user_id']." AND usertoattr.user_id=user.user_id 
      AND attribute.attr_id = usertoattr.attr_id";
-//     $usertoattrquery= "SELECT * FROM attribute";
+
      $usertoattrfetch=mysqli_query($con,$usertoattrquery);
      $attribute='';
      //needing for the javascript function
      $attr=array();
     while ($usertoattrresult=mysqli_fetch_array($usertoattrfetch))
      {
-       
-        $attribute=$attribute.$usertoattrresult["attr_title"].",";
         $attr[]=$usertoattrresult["attr_title"];
      }
-
-     // writing the table staff
+             $attribute=implode(",", $attr);
+       
+     // writing the table staff username password role attribute ... we have to add an email column
 echo "<tr ><td>".$result["username"]."</td><td>" .$result["password"]."</td>
     <td>" .$result["role"]."</td><td>".$attribute."</td><td>coming soon</td><td>
          <a href='#userModal' role='button'  class='btn' data-toggle='modal' onclick=\"javascript:rewriteUser('".$result["username"]."','".
-        $result["password"]."','".$result["role"]."','".$result["user_id"]."');\">Edit</a> </td>
+        $result["password"]."','".$result["role"]."','".$result["user_id"]."','".$attribute."');\">Edit</a> </td>
          <td><a href='#' role='button' class='btn' onclick=\"javascript:deleteConfirm('".$result['user_id'].
         "');\">Delete</button> </td></tr>";
 
 
 }
-    
- 
-?>
+   ?>
         </table>
       
         
@@ -119,38 +121,22 @@ echo "<tr ><td>".$result["username"]."</td><td>" .$result["password"]."</td>
              <?php
              
  while($attrresult = mysqli_fetch_array($attrfetch)) {
-echo  "<option>".$attrresult[attr_title]."</option>";
+     // $selected = in_array( $attrresult[attr_title], $attr ) ? ' selected' : '';
+echo  "<option >".$attrresult[attr_title]."</option>";
  }
              ?>
          </select><br>
+          <!-- hidden div used to capture the edit user id -->
+         <div style="visibility: hidden"> <input type="text" name="hiddenid" id="hiddenid"></div>
          <button class='btn btn-primary'type='submit'>OK</button>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
                  </form>
                 
             </div>
+            
              <!--Creating the add button. rewriteUser is important for the edituser data not to be writed in the modal -->
-            <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:rewriteUser('','','',null);">Add New User</a>
- 
-         <!-- Modal for the creation of a Edit User (Depricated)
-     <div id="editUser" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div> 
-                 <h3 id="myModalLabel">Edit User</h3>
-                 User Name <input id='editName' type="text"><br>
-         User Password <input id='editPass' type="text"><br>
-         User Email <input id='editEmail' type="text"><br>
-         User Role <select id='editRole'>
-  <option >Evaluator</option>
-  <option >Observer</option>
-         </select><br>
-         User Attribute <select multiple id="editAttr">
-  <option >Economics</option>
-  <option >Software</option>
-  <option >Management</option>
-         </select><br>
-         <button class='btn btn-primary'>OK</button>
-         <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
-                
-            </div>   -->
+            <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:rewriteUser('','','',null,null);">Add New User</a>
+
                
 <script>
 function deleteConfirm(userid)
@@ -173,21 +159,50 @@ confirm("Would you like to delete all of his answers too?");
 }
 
 //insert values from table to modal
-function rewriteUser(name,password,role,userid) {
+function rewriteUser(name,password,role,userid,attr) {
  var myTarget = document.getElementById("editName");
     myTarget.value =name;
     myTarget = document.getElementById("editPass");
     myTarget.value =password;
-    myTarget = document.getElementById("editEmail");
+     myTarget = document.getElementById("hiddenid");
     myTarget.value =userid;
+    
+    //make the preselected attributes of users selected 
+ var optionsToSelect=attr.split(",");
+myTarget = document.getElementById("editAttr");
+
+  for ( var i = 0, l = myTarget.options.length, o; i < l; i++ )
+{
+    
+  o = myTarget.options[i];
+  o.selected=false;
+  //is the attribute of the user common with the attributes in the modal?
+  if ( optionsToSelect.indexOf( o.text ) != -1 )
+  {
+    o.selected = true;
+  }
+}
+
+//finding the sellecting attributes
+//var allattr= new Array(<?php //echo json_encode(',', $attr); ?>);
+//attr=attr.split(",");
+//var common;
+//for (var i=0; i<attr.length; i++) {
+//    common = allattr.indexOf(attr[i]);
+//    if (common > -1) {
+//        allattr.splice(common, 1);
+//    }
+//}
+//  myTarget = document.getElementById("editAttr");
+
 //     myTarget = document.getElementById("editRole");
 //    myTarget.value =role;
 //    myTarget = document.getElementById("editAttr");
     
-    //declaring that that there is user_id
-$.post("01users.php",{ edit_user_id : userid });
+    //declaring that that there is user_id (not working)
+//$.post("01users.php",{ edit_user_id : userid });
 
- // }
+ 
 }
 
  
