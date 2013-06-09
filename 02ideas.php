@@ -1,3 +1,36 @@
+<?php
+    include_once ('evform.php');
+     
+    if (isset($_POST['ideatitle'])){
+        
+         if($_POST['hiddenid']!=null){
+             echo $_POST['hiddenid'];
+       $sql1="UPDATE idea SET title='$_POST[ideatitle]',idea_disc='$_POST[ideadescription]' 
+           WHERE idea_id='$_POST[hiddenid]'";
+       echo $sql1;
+         mysqli_query($con,$sql1);
+        $_POST['hiddenid']=null;   
+       }
+       else{
+         //inserting a new idea
+    $query2= "INSERT INTO idea (title,idea_disc)      
+        VALUES ('$_POST[ideatitle]','$_POST[ideadescription]')"; //post request have no restriction on data length
+    mysqli_query($con,$query2) or die ('could no connect with instructions');
+    }
+    }
+    //deleting idea
+    if(isset($_POST['delete_idea_id'])){
+        echo $_POST['delete_idea_id'];
+     $delete_idea=" DELETE FROM idea WHERE idea_id='$_POST[delete_idea_id]'"; 
+      mysqli_query($con,$delete_idea);
+    }
+    
+    //retrieving ideas
+    $query1= "SELECT * FROM idea";
+    $fetch1=mysqli_query($con,$query1) or die ('could no connect with instructions');
+   
+    
+    ?>
 <html>
     <head>
         <title></title>
@@ -10,39 +43,48 @@
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-transition.js'></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-collapse.js'></script>
     </head>
-    <body>
+    <body> 
         
+       <!-- managing ideas table-->
         <table class="table table-hover">
-            <tr><th>Username</th><<th>Edit</th><th>Delete</th></tr>
+            <tr><th>Title</th><th>Edit</th><th>Delete</th></tr>
         <?php
-    include_once ('evform.php');
-    $query= "SELECT * FROM idea";
-    $fetch=mysqli_query($con,$query) or die ('could no connect with instructions');
    
- while($result = mysqli_fetch_array($fetch)) {
-echo "<tr><td>".$result["title"]."</td><td>
-         <a href='#editIdea' role='button' class='btn' data-toggle='modal'>Edit</a> </td>
-         <td><button class='btn'onclick='deleteConfirm()'>Delete</button> </td></tr>";
+ while($result = mysqli_fetch_array($fetch1)) {
+     echo "<tr><td><div class='accordion-group'>";
+    echo "<div class='accordion-heading'>";
+       echo "<a class='accordion-toggle' data-toggle='collapse' data-parent='#accordion2' href='#collapse".$result['idea_id']."'>";
+echo $result["title"]."</a></div></td><td>
+         <a href='#ideaModal' role='button' class='btn' data-toggle='modal' onclick=\"javascript:editIdea('".$result['title']."','".$result['idea_disc']."','".$result['idea_id']."');\">Edit</a> </td>
+         <td><button class='btn' onclick='deleteConfirm(".$result['idea_id'].")'>Delete</button> </td></tr>";
+     echo "<tr><td colspan='3'><div id='collapse".$result['idea_id']."' class='accordion-body collapse'>".$result['idea_disc'];
+                echo    "<div class='accordion-inner'>";
+echo '</div></div></td></tr></div>';
 }
     
  
 ?>
         </table>
-      
-        <div>
-            <div id="newIdea" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+         <a href="#ideaModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:ediIdea('','',null);">Add Idea</a>
+         
+      <!-- Modal -->
+   
+            <div id="ideaModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div> 
                 <h3 id="myModalLabel">Add a new Idea</h3>
-                Title <input type="text"><br>
-              Description<input type="text"><br>
+                <form method='post' action='02ideas.php'>
+                Title <input type="text" name='ideatitle' id='ideatitle'><br>
+              Description<br><textarea rows="4" cols="50" name='ideadescription' id='ideadesc'>
+
+</textarea><br>
          </select><br>
+            <div style="visibility: hidden"> <input type="text" name="hiddenid" id="hiddenid"></div>
          <button class='btn btn-primary'>OK</button>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
-                
+                </form>
             </div>
-            <a href="#newIdea" role="button" class="btn btn-primary" data-toggle="modal">Add Idea</a>
-        </div>
-            
+           
+    
         
      <div id="editIdea" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div> 
@@ -54,102 +96,30 @@ echo "<tr><td>".$result["title"]."</td><td>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
                 
             </div>   
-               
+         
 <script>
-function deleteConfirm()
+function deleteConfirm(idea_id)
 {
-var r=confirm("Are you sure you want to delete this user?");
+var r=confirm("Are you sure you want to delete this idea?");
 
 if (r==true){
-    deleteAnswers();
+    $.post("02ideas.php",{ delete_idea_id : idea_id });
+     window.location.href = "02ideas.php";
 }
 }
-
-function deleteAnswers()
-{
-confirm("Would you like to delete all of his answers too?");
+//insert values from table to modal
+function editIdea(name,description,hiddenid) {
+ var myTarget = document.getElementById("ideatitle");
+    myTarget.value =name;
+    myTarget = document.getElementById("ideadesc");
+    myTarget.value =description;
+    myTarget = document.getElementById("hiddenid");
+    myTarget.value =hiddenid;
+   
 }
 </script>
-
-          
-            
-            <h2>Example accordion</h2>
-           
-            <button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#demo">
-                hi
-            </button>
-            <div id="demo" class="collapse in">fjasdfsafskadfa;sdfas </div>
-              <div class="accordion" id="accordion2">
-                <div class="accordion-group">
-                  <div class="accordion-heading">
-                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseOne">
-                      Collapsible Group Item #1
-                    </a>
-                  </div>
-                  <div id="collapseOne" class="accordion-body collapse in">
-                    <div class="accordion-inner">
-                      <h3 id="myModalLabel">Edit Question</h3>
-                 Question Text<input type="text"><br>
-                 Question Weight<input type="text"><br>
-                  Set Category  
-                 
-  <select>
-  <option >Category 1</option>
-  <option >Category 2</option>
-  <option >Category 3</option>
-  </select><br>
-  
-  
-  
-  
-     
-  <h4>Edit Answers</h4><br>
-  <p>Text         Value        Delete</p>
-  <div>
-  <?php
-  $query1= "SELECT * FROM qvalues WHERE question_id=1";
-  $fetch1=mysqli_query($con,$query1);
-  while($result1 = mysqli_fetch_array($fetch1)) {
-      echo " <input type='text' value='".$result1["qv_text"]."'> <input type='text'
-    value='" .$result1["qv_value"]."'>
-    <button class='btn'>Delete</button>";}
-  ?>
-      <br>
-     <button class='btn'>add</button> 
-     <br>
-         <button class='btn btn-primary'>OK</button>
-         <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
-          </div>
-  </div>      
-                    </div>
-                  </div>
-                </div>
-                <div class="accordion-group">
-                  <div class="accordion-heading">
-                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-                      Collapsible Group Item #2
-                    </a>
-                  </div>
-                  <div id="collapseTwo" class="accordion-body collapse">
-                    <div class="accordion-inner">
-                      Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-                    </div>
-                  </div>
-                </div>
-                <div class="accordion-group">
-                  <div class="accordion-heading">
-                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseThree">
-                      Collapsible Group Item #3
-                    </a>
-                  </div>
-                  <div id="collapseThree" class="accordion-body collapse">
-                    <div class="accordion-inner">
-                      Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            
-    </body>
-    
+<?php
+ mysqli_close($con);
+ ?>
+ </body>  
 </html>

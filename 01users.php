@@ -208,7 +208,7 @@ myTarget = document.getElementById("editAttr");
  
 </script>
  <?php
- //mysqli_close($con);
+ mysqli_close($con);
  ?>
     </body>
     
