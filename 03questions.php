@@ -10,7 +10,7 @@
 
  
  if (isset($_GET['category_id'])){
-      $question_query= "SELECT * FROM question,category WHERE cid=".$_GET['category_id'];
+      $question_query= "SELECT * FROM question WHERE cid=".$_GET['category_id'];
       $question_fetch=mysqli_query($con,$question_query);
     //boolean  for questions or instructions
        $is_question=true;
@@ -19,9 +19,18 @@
      $instruction_query="SELECT * FROM instructions";
      $instruction_fetch=mysqli_query($con,$instruction_query);
       $is_question=false;
+      
+      //  $query1= "SELECT * FROM qvalues WHERE question_id=1";
+//  $fetch1=mysqli_query($con,$query1);
+//  while($result1 = mysqli_fetch_array($fetch1)) {
+//      echo " <input type='text' value='".$result1["qv_text"]."'> <input type='text'
+//    value='".$result1["qv_value"]."'>
+//    <button class='btn'>Delete</button>";}
  }
 ?>
-
+<style>
+  .table th {text-align:center; vertical-align:middle;}
+</style>
 <html>
     <head>
         <title></title>
@@ -31,6 +40,8 @@
             <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-modal.js'></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/jquery.js'></script>
+<script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-transition.js'></script>
+<script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-collapse.js'></script>
 
     </head>
     <body>
@@ -55,62 +66,133 @@
         <table class="table table-hover">
             <?php 
             if ($is_question==true){
-          echo  '<tr><th>No</th><th>Text</th><th>Question Weight</th></th><th>Edit</th><th>Delete</th></tr>';
+          echo  '<tr><th>No</th><th>Text</th><th>Question Weight</th><th>Connection</th></th><th>Delete</th></tr>';
        
    $no=1;
  while($result = mysqli_fetch_array($question_fetch)) {
-echo "<tr><td>".$no."</td><td>" .$result["qtext"]."</td>
-    <td>" .$result["qweight"]."</td> <td>
-         <a href='#editQuestion' role='button' class='btn' data-toggle='modal'>Edit</a> </td>
-         <td><button class='btn'>Delete</button> </td></tr>";
+    echo "<tr><td>".$no."</td><td><div class='accordion-heading'>";
+    echo "<a class='accordion-toggle' data-toggle='collapse' data-parent='#accordion2' href='#collapse".$result['question_id']."'>";
+    echo $result["qtext"]."</a></div></td><td>" .$result["qweight"]."</td> 
+        <td>coming soon </td> <td><button class='btn'>Delete</button> </td></div></tr>";
+     echo "<tr><td colspan='5' style='  border-top-width: 0px; padding-top:0px; padding-bottom: 0px;'>
+         <div id='collapse".$result['question_id']."' class='accordion-body collapse'>";
+     
+                    //creating the edit questions table
+                echo    "<div class='accordion-inner'><h5 class='nav-header'> edit Question </h5>";
+              echo "<table style='text-align:center;'><tr><th rowspan='2' class='text-justify'>No</th><th rowspan='2' class='text-justify'>Question Text</th><th rowspan='2'>Question Weight</th><th colspan='3'>Attribute Weights</th></tr>
+                  <tr><th>Manager</th><th>Programmer</th><th>Accountant</th></tr>
+                    <tr> <td><input type='text' class='input-small'></td><td><input type='text'></td> <td><input type='text'class='input-small'></td><td><input type='text' class='input-small'></td><td><input type='text' class='input-small'></td>
+                    <td><input type='text' class='input-small'></td></tr></table><br>";
+                     echo '<p>no Connection</p>';
+                  // creating the edit possible answers table 
+                  echo "<h5 class='nav-header'> edit answers for this question </h5><br>
+                      <table><tr><th>Text</th><th>Value</th></tr>";
+                   for( $i=1; $i<11; $i++){  
+                      echo "<tr><td><input type='text'></td><td><input type='text' class='input-small' value='$i'></td></tr>"; 
+                   }
+                 echo '</table>';  
+                 
+               echo    "<a href='#editConnection' role='button' class='btn' data-toggle='modal'>Manage Connections</a><button class='btn'>Save</button><button class='btn'>Cancel</button>";
+
+echo '</div></div></td></tr>';
 $no++;
 }
             }
    else{
         $no=1;
- echo  '<tr><th>No</th><th>Text</th></th><th>Edit</th><th>Delete</th></tr>';
+ echo  '<tr><th>No</th><th>Text</th></th><th>Save</th><th>Delete</th></tr>';
  while($result = mysqli_fetch_array($instruction_fetch)) {
 echo "<tr><td>".$no."</td><td>" .$result["instructions"]."</td> <td>
-         <a href='#editQuestion' role='button' class='btn' data-toggle='modal'>Edit</a> </td>
+         <a role='button' class='btn' data-toggle='modal'>Save</a> </td>
          <td><button class='btn'>Delete</button> </td></tr>";
 $no++;
  }}
 ?>
         
-        </table>       </div>
+            <tr><td><button class='btn btn-primary'>New question</button></td></tr>  </table>       </div>
         
-   <div id="editQuestion" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+   <div id="editConnection" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
                 <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div>
-                 <h3 id="myModalLabel">Edit Question</h3>
-                 Question Text<input type="text"><br>
-                 Question Weight<input type="text"><br>
-                  Set Category  
-                 
-  <select>
-  <option >Category 1</option>
-  <option >Category 2</option>
-  <option >Category 3</option>
-  </select><br>
-  
-  
-  
-  
-     
-  <h4>Edit Answers</h4><br>
-  <p>Text         Value        Delete</p>
-  <div>
-  <?php
-  $query1= "SELECT * FROM qvalues WHERE question_id=1";
-  $fetch1=mysqli_query($con,$query1);
-  while($result1 = mysqli_fetch_array($fetch1)) {
-      echo " <input type='text' value='".$result1["qv_text"]."'> <input type='text'
-    value='".$result1["qv_value"]."'>
-    <button class='btn'>Delete</button>";}
-  ?>
+                 <h5 class='nav-header'>Manage Connections</h5>
+                 <table class="table table-hover"><tr><th>Connected Question</th><th>Rule</th></th><th>Message</th><th>Delete</tr>
+                     <tr><td>3</td><td>if v<2 and cqv>6 </td><td>You are a cool Evaluator!</td><td><button class='btn'>x</button></td></tr>
+                 </table>
+    Connect with              
+  <select  class='input-small'>
+  <option >1</option>
+  <option >2</option>
+  <option >3</option>
+  </select> question<br>
+  if Evaluator has selected value
+  <select class='input-small'>
+  <option >=</option>
+  <option ><</option>
+  <option >></option>
+  <option >between</option>
+  </select>
+  <select class='input-small'>
+  <option >1</option>
+  <option >2</option>
+  <option >3</option>
+  <option >4</option>
+  <option >5</option>
+  <option >6</option>
+  <option >7</option>
+  <option >8</option>
+  <option >9</option>
+   <option >10</option>
+  </select>
+  and 
+ <select class='input-small'>
+  <option >1</option>
+  <option >2</option>
+  <option >3</option>
+  <option >4</option>
+  <option >5</option>
+  <option >6</option>
+  <option >7</option>
+  <option >8</option>
+  <option >9</option>
+   <option >10</option> 
+ </select>
+  and the selected value in the connected question is
+  <select class='input-small'>
+  <option >=</option>
+  <option ><</option>
+  <option >></option>
+  <option >between</option>
+  </select>
+  <select class='input-small'>
+  <option >1</option>
+  <option >2</option>
+  <option >3</option>
+  <option >4</option>
+  <option >5</option>
+  <option >6</option>
+  <option >7</option>
+  <option >8</option>
+  <option >9</option>
+   <option >10</option>
+  </select> and 
+    <select class='input-small'>
+  <option >1</option>
+  <option >2</option>
+  <option >3</option>
+  <option >4</option>
+  <option >5</option>
+  <option >6</option>
+  <option >7</option>
+  <option >8</option>
+  <option >9</option>
+   <option >10</option>
+  </select> <br>
+  Write the text you want the Evaluator to see in the selected question
+     <textarea rows="4" cols="50"></textarea>
+ 
       <br>
-     <button class='btn'>add</button> 
+     <button class='btn'>add Connection</button> 
      <br>
-         <button class='btn btn-primary'>OK</button>
+         <button class='btn btn-primary'>Save</button>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
           </div>
   </div>     

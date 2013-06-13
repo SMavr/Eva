@@ -7,7 +7,6 @@
              echo $_POST['hiddenid'];
        $sql1="UPDATE idea SET title='$_POST[ideatitle]',idea_disc='$_POST[ideadescription]' 
            WHERE idea_id='$_POST[hiddenid]'";
-       echo $sql1;
          mysqli_query($con,$sql1);
         $_POST['hiddenid']=null;   
        }
@@ -48,22 +47,25 @@
        <!-- managing ideas table-->
         <table class="table table-hover">
             <tr><th>Title</th><th>Edit</th><th>Delete</th></tr>
+         
+
         <?php
    
  while($result = mysqli_fetch_array($fetch1)) {
-     echo "<tr><td><div class='accordion-group'>";
+     echo "<tr><td>";
     echo "<div class='accordion-heading'>";
        echo "<a class='accordion-toggle' data-toggle='collapse' data-parent='#accordion2' href='#collapse".$result['idea_id']."'>";
 echo $result["title"]."</a></div></td><td>
          <a href='#ideaModal' role='button' class='btn' data-toggle='modal' onclick=\"javascript:editIdea('".$result['title']."','".$result['idea_disc']."','".$result['idea_id']."');\">Edit</a> </td>
          <td><button class='btn' onclick='deleteConfirm(".$result['idea_id'].")'>Delete</button> </td></tr>";
-     echo "<tr><td colspan='3'><div id='collapse".$result['idea_id']."' class='accordion-body collapse'>".$result['idea_disc'];
-                echo    "<div class='accordion-inner'>";
-echo '</div></div></td></tr></div>';
+     echo "<tr ><td colspan='3' style='  border-top-width: 0px; padding-top:0px; padding-bottom: 0px;'><div id='collapse".$result['idea_id']."' class='accordion-body collapse '>";
+                echo    "<div class='accordion-inner'>".$result['idea_disc'];
+echo '</div></div></td></tr>';
 }
     
  
 ?>
+         
         </table>
          <a href="#ideaModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:ediIdea('','',null);">Add Idea</a>
          

@@ -68,8 +68,15 @@ $query= "SELECT * FROM user";
             <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-modal.js'></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/jquery.js'></script>
+<script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-tab.js'></script>
     </head>
     <body>
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+        <li class="active"><a href="#usertablediv" data-toggle="tab">Users</a></li>
+        <li><a href="#attrdiv" data-toggle="tab">Attributes</a></li>
+        </ul>
+          <div id="users_attributes" class="tab-content">
+        <div class="tab-pane active" id="usertablediv">
         <table class="table table-hover" id="usertable">
             <tr><th>Username</th><th>Password</th><th>Role</th><th>Attribute</th></th><th>Ideas/Score Ratio</th><th>Edit</th><th>Delete</th></tr>
         <?php
@@ -102,7 +109,20 @@ echo "<tr ><td>".$result["username"]."</td><td>" .$result["password"]."</td>
 
 }
    ?>
+            
         </table>
+             <!--Creating the add button. rewriteUser is important for the edituser data not to be writed in the modal -->
+            <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:rewriteUser('','','',null,null);">Add New User</a>
+        </div>
+              <!-- The attributes table div-->
+           <div class="tab-pane" id="attrdiv">
+               <table class="table table-hover" id="usertable">
+                   <tr><th>Title</th><th>Users</th><th>Add</th> <th>Delete</th></tr>
+                   <tr><td>Manager</td><td>4</td><td>  <button class='btn btn-primary'>Add</button></td><td><button class='btn'>Delete</button></td></tr>
+               </table>
+               <a href="#userModal" role="button" class="btn btn-primary"> Add Attribute</a>
+        </div>   
+          </div>
       
         
             <!-- Modal for the creation of a New User -->
@@ -133,11 +153,8 @@ echo  "<option >".$attrresult[attr_title]."</option>";
                  </form>
                 
             </div>
-            
-             <!--Creating the add button. rewriteUser is important for the edituser data not to be writed in the modal -->
-            <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:rewriteUser('','','',null,null);">Add New User</a>
-
-               
+          <!--end of Modal-->  
+     
 <script>
 function deleteConfirm(userid)
 {
@@ -182,34 +199,17 @@ myTarget = document.getElementById("editAttr");
     o.selected = true;
   }
 }
-
-//finding the sellecting attributes
-//var allattr= new Array(<?php //echo json_encode(',', $attr); ?>);
-//attr=attr.split(",");
-//var common;
-//for (var i=0; i<attr.length; i++) {
-//    common = allattr.indexOf(attr[i]);
-//    if (common > -1) {
-//        allattr.splice(common, 1);
-//    }
-//}
-//  myTarget = document.getElementById("editAttr");
-
-//     myTarget = document.getElementById("editRole");
-//    myTarget.value =role;
-//    myTarget = document.getElementById("editAttr");
-    
-    //declaring that that there is user_id (not working)
-//$.post("01users.php",{ edit_user_id : userid });
-
- 
 }
+jQuery(document).ready(function ($) {
+        $('#tabs').tab();
+    });
 
  
 </script>
  <?php
  mysqli_close($con);
  ?>
+
     </body>
     
 </html>
