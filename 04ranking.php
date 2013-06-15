@@ -78,7 +78,7 @@
 ?>
            </tbody>
         </table>
-  
+<button class='btn btn-primary'>Reload</button>
 
     <script>
   $(document).ready(function() 

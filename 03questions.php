@@ -45,6 +45,7 @@
 
     </head>
     <body>
+       <div id='showme'>The result here</div>
           <!--select category div-->
         <div style=" width:200px;float:left;">
             
@@ -98,13 +99,18 @@ echo '</div></div></td></tr>';
 $no++;
 }
             }
-   else{
+   else{   // creating instructions table
         $no=1;
  echo  '<tr><th>No</th><th>Text</th></th><th>Save</th><th>Delete</th></tr>';
  while($result = mysqli_fetch_array($instruction_fetch)) {
-echo "<tr><td>".$no."</td><td>" .$result["instructions"]."</td> <td>
-         <a role='button' class='btn' data-toggle='modal'>Save</a> </td>
-         <td><button class='btn'>Delete</button> </td></tr>";
+     echo '<form name="instruction_form"';
+echo "<tr><td>".$no."</td><td><div id='instruction_id".$result["instructions_id"]."'>fsdgdgdf".
+        $result["instructions_id"]."</div>
+    <textarea rows='6' id='instarea".$result["instructions_id"].
+        "'style='width:600px' >".$result["instructions"]."</textarea></td> <td>
+         <input type='button' class='btn'
+         onclick='ajaxFunction(\"instarea".$result["instructions_id"]."\",\"instruction_id".$result["instructions_id"]."\")' value='Save'/>
+         <td><button class='btn'>Delete</button> </td></tr></form>";
 $no++;
  }}
 ?>
@@ -195,9 +201,51 @@ $no++;
          <button class='btn btn-primary'>Save</button>
          <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
           </div>
-  </div>     
-            
-       
+  </div>    
+ 
+     <script language="javascript" type="text/javascript">
+//using AJAX for instructions
+//Browser Support Code for AJAX
+function ajaxFunction(instarea,instid){
+ var ajaxRequest;  // The variable that makes Ajax possible!
+	
+ try{
+   // Opera 8.0+, Firefox, Safari
+   ajaxRequest = new XMLHttpRequest();
+ }catch (e){
+   // Internet Explorer Browsers
+   try{
+      ajaxRequest = new ActiveXObject("Msxml2.XMLHTTP");
+   }catch (e) {
+      try{
+         ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+      }catch (e){
+         // Something went wrong
+         alert("Your browser broke!");
+         return false;
+      }
+   }
+ }
+ // Create a function that will receive data 
+ // sent from the server and will update
+ // div section in the same page.
+ ajaxRequest.onreadystatechange = function(){
+   if(ajaxRequest.readyState == 4){
+      var ajaxDisplay = document.getElementById('showme');
+      ajaxDisplay.innerHTML = ajaxRequest.responseText;
+   }
+ }
+ // Now get the value from user and pass it to
+ // server script.
+ var insturction_text = document.getElementById(instarea).value;
+var ajax_instruction_id = document.getElementById(instid).value;
+ var queryString = "?insturction_text=" + insturction_text ;
+ queryString +=  "&inst_id=" + ajax_instruction_id;
+ ajaxRequest.open("GET", "031instsql.php" + 
+                              queryString, true);
+ ajaxRequest.send(null); 
+}
+</script>  
     </body>
     
 </html>

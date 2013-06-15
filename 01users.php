@@ -36,9 +36,10 @@ VALUES ('$_POST[newusername]','$_POST[newpasswordname]')";
    mysqli_query($con,$insertuser);
             }
   }
-            //important deleting the post of the new user
-  
+
    }
+   
+   //maybe I have to delete those
     $_POST['newusername']=null; 
    $_POST['password']=null;
     $_POST['isattr']=null;
@@ -48,6 +49,13 @@ VALUES ('$_POST[newusername]','$_POST[newpasswordname]')";
     if(isset($_POST['deleteuserid'])){
      $deleteuser=" DELETE FROM user WHERE user_id='$_POST[deleteuserid]'"; 
       mysqli_query($con,$deleteuser);
+    }
+    
+    //insert new attribute in the database
+    if(isset($_POST['attrname'])){
+       $new_attr_query="INSERT INTO attribute (attr_title)
+           VALUES ('".$_POST['attrname']."')";
+       mysqli_query($con, $new_attr_query);
     }
 // retrieving all users from user table 
 $query= "SELECT * FROM user";
@@ -69,14 +77,17 @@ $query= "SELECT * FROM user";
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-modal.js'></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/jquery.js'></script>
 <script type='text/javascript' src='http://twitter.github.io/bootstrap/assets/js/bootstrap-tab.js'></script>
+<script>$("#tabs").tabs({
+  selected: 2 
+});</script>
     </head>
     <body>
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
-        <li class="active"><a href="#usertablediv" data-toggle="tab">Users</a></li>
-        <li><a href="#attrdiv" data-toggle="tab">Attributes</a></li>
+        <li <li class="<?php echo isset($_POST['attrname']) ? '' : 'active'; ?>"><a href="#usertablediv" data-toggle="tab">Users</a></li>
+        <li class="<?php echo isset($_POST['attrname']) ? 'active' : ''; ?>"><a href="#attrdiv" data-toggle="tab">Attributes</a></li>
         </ul>
           <div id="users_attributes" class="tab-content">
-        <div class="tab-pane active" id="usertablediv">
+        <div class="tab-pane <?php echo isset($_POST['attrname']) ? '' : 'active'; ?>" id="usertablediv">
         <table class="table table-hover" id="usertable">
             <tr><th>Username</th><th>Password</th><th>Role</th><th>Attribute</th></th><th>Ideas/Score Ratio</th><th>Edit</th><th>Delete</th></tr>
         <?php
@@ -114,16 +125,57 @@ echo "<tr ><td>".$result["username"]."</td><td>" .$result["password"]."</td>
              <!--Creating the add button. rewriteUser is important for the edituser data not to be writed in the modal -->
             <a href="#userModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:rewriteUser('','','',null,null);">Add New User</a>
         </div>
-              <!-- The attributes table div-->
-           <div class="tab-pane" id="attrdiv">
+              
+              
+              <!-- The attributes table div (maybe we should make a seperate file with this)-->
+              
+           <div class="tab-pane <?php echo isset($_POST['attrname']) ? 'active' : ''; ?>" id="attrdiv">
                <table class="table table-hover" id="usertable">
-                   <tr><th>Title</th><th>Users</th><th>Add</th> <th>Delete</th></tr>
-                   <tr><td>Manager</td><td>4</td><td>  <button class='btn btn-primary'>Add</button></td><td><button class='btn'>Delete</button></td></tr>
+                   <tr><th>Title</th><th>Users</th><th>Edit Users</th> <th>Delete</th></tr>
+                   <?php
+                  
+                    while ($attrresult=mysqli_fetch_array($attrfetch))
+                    {
+                         //1 retrieving users who belong to a specific attribute
+     $users_to_attr= 'SELECT username FROM user, usertoattr WHERE 
+         usertoattr.attr_id='.$attrresult["attr_id"].' AND user.user_id = usertoattr.user_id';
+
+     $users_to_attr_fetch=mysqli_query($con,$users_to_attr);
+     $attribute1='';
+     
+     //needing for the javascript function
+     $attr2=array();
+    while ($users_to_attr_result=mysqli_fetch_array($users_to_attr_fetch))
+     {
+        $attr2[]=$users_to_attr_result["username"];
+     }
+             $attribute1=implode(",", $attr2);
+             
+            //1 end
+                        
+                        //counting how many users belong to each attribute
+                          $users_to_attr_count='SELECT COUNT(*) FROM usertoattr 
+                              WHERE usertoattr.attr_id ='.$attrresult["attr_id"];
+                          $users_to_attr_count_fetch=mysqli_query($con,$users_to_attr_count);
+                           $users_to_attr_count_result=mysqli_fetch_array( $users_to_attr_count_fetch);
+                  echo '<tr><td>'.$attrresult["attr_title"].'</td>
+                      <td>'.$users_to_attr_count_result["COUNT(*)"].'</td>
+                        <td>  <a href="#attrModal" role="button"  class="btn" data-toggle="modal"
+                        onclick="javascript:editAttribute(\''.$attrresult["attr_title"].'\',\''.$attrresult["attr_id"].'\',\''.
+                         $attribute1.'\');">Edit</a></td>
+                        <td><a href="#" role="button" class="btn" onclick=\"javascript:\">Delete</button> </td></tr>';      
+                        
+                        
+                    }
+                   
+                   ?>
                </table>
-               <a href="#userModal" role="button" class="btn btn-primary"> Add Attribute</a>
+                <a href="#attrModal" role="button" class="btn btn-primary" data-toggle="modal" onclick="javascript:editAttribute('','','');">Add Attribute</a>
         </div>   
           </div>
       
+        <!-- end of attributes table-->
+        
         
             <!-- Modal for the creation of a New User -->
             <div id="userModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -139,7 +191,7 @@ echo "<tr ><td>".$result["username"]."</td><td>" .$result["password"]."</td>
          </select><br>
          User Attribute <select multiple="multiple" name="isattr[]" id="editAttr">
              <?php
-             
+           $attrfetch=mysqli_query($con,$attrquery);  
  while($attrresult = mysqli_fetch_array($attrfetch)) {
      // $selected = in_array( $attrresult[attr_title], $attr ) ? ' selected' : '';
 echo  "<option >".$attrresult[attr_title]."</option>";
@@ -153,7 +205,30 @@ echo  "<option >".$attrresult[attr_title]."</option>";
                  </form>
                 
             </div>
-          <!--end of Modal-->  
+          <!--end of user Modal-->  
+          
+          <!-- Modal for edit uses to each attribute -->
+            <div id="attrModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button></div> 
+                <h5 id="myModalLabel">Edit <p name="attrpd" id="attrpd"></p></h5> 
+                 <form method='post' action='01users.php'>
+                 Edit attribute title <input type="text" name="attrname" id='attrname'><br>
+         Users<br> <select multiple="multiple" name="attr_users_select" id="attr_users_select" style="height:200px">
+             <?php
+             $fetch1=mysqli_query($con,$query);
+ while($result1 = mysqli_fetch_array($fetch1)) {
+echo  "<option >".$result1["username"]."</option>";
+ }
+             ?>
+         </select><br>
+          <!-- hidden div used to capture the id of the current attribute -->
+         <div style="visibility: hidden"> <input type="text" name="attr_hidden_id" id="attr_hidden_id"></div>
+         <button class='btn btn-primary'type='submit'>Save</button>
+         <button class='btn' data-dismiss="modal" aria-hidden="true">Cancel</button>
+                 </form>
+                
+            </div>
+          <!--end of user Modal-->  
      
 <script>
 function deleteConfirm(userid)
@@ -200,9 +275,36 @@ myTarget = document.getElementById("editAttr");
   }
 }
 }
-jQuery(document).ready(function ($) {
-        $('#tabs').tab();
-    });
+
+// insert values to the attributes modal
+function editAttribute(title,attr_id,users_to_attr) {
+ var myTarget = document.getElementById("attrname");
+    myTarget.value =title;
+    document.getElementById("attrpd").innerHTML = title;
+     myTarget = document.getElementById("attr_hidden_id");
+    myTarget.value =attr_id;
+    
+    //grey the users who belong to the specific attribute
+ var optionsToSelect=users_to_attr.split(",");
+myTarget = document.getElementById("attr_users_select");
+
+  for ( var i = 0, l = myTarget.options.length, o; i < l; i++ )
+{
+    
+  o = myTarget.options[i];
+  o.selected=false;
+  //is the attribute of the user common with the attributes in the modal?
+  if ( optionsToSelect.indexOf( o.text ) != -1 )
+  {
+    o.selected = true;
+  }
+}
+
+
+}
+//jQuery(document).ready(function ($) {
+//        $('#tabs').tab();
+//    });
 
  
 </script>
